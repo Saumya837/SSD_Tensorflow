@@ -40,7 +40,7 @@ tf.app.flags.DEFINE_float(
 # General Flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_string(
-    'train_dir', 'converted/',
+    'train_dir', 'checkpoints/',
     'Directory where checkpoints and event logs are written to.')
 tf.app.flags.DEFINE_integer('num_clones', 1,
                             'Number of model clones to deploy.')
@@ -57,7 +57,7 @@ tf.app.flags.DEFINE_integer(
     'log_every_n_steps', 10,
     'The frequency with which logs are print.')
 tf.app.flags.DEFINE_integer(
-    'save_summaries_secs', 600,
+    'save_summaries_secs', 60,
     'The frequency with which summaries are saved, in seconds.')
 tf.app.flags.DEFINE_integer(
     'save_interval_secs', 600,
@@ -68,9 +68,9 @@ tf.app.flags.DEFINE_float('gpu_memory_fraction', 0, 'GPU memory fraction to use.
 # Optimization Flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_float(
-    'weight_decay', 0.00004, 'The weight decay on the model weights.')
+    'weight_decay', 0.0005, 'The weight decay on the model weights.')
 tf.app.flags.DEFINE_string(
-    'optimizer', 'rmsprop',
+    'optimizer', 'adam',
     'The name of the optimizer, one of "adadelta", "adagrad", "adam",'
     '"ftrl", "momentum", "sgd" or "rmsprop".')
 tf.app.flags.DEFINE_float(
@@ -131,7 +131,7 @@ tf.app.flags.DEFINE_float(
 tf.app.flags.DEFINE_string(
     'dataset_name', 'pascalvoc_2007', 'The name of the dataset to load.')
 tf.app.flags.DEFINE_integer(
-    'num_classes', 21, 'Number of classes to use in the dataset.')
+    'num_classes', 2, 'Number of classes to use in the dataset.')
 tf.app.flags.DEFINE_string(
     'dataset_split_name', 'train', 'The name of the train/test split.')
 tf.app.flags.DEFINE_string(
@@ -147,7 +147,7 @@ tf.app.flags.DEFINE_string(
     'preprocessing_name', None, 'The name of the preprocessing to use. If left '
     'as `None`, then the model_name flag is used.')
 tf.app.flags.DEFINE_integer(
-    'batch_size', 32, 'The number of samples in each batch.')
+    'batch_size', 10, 'The number of samples in each batch.')
 tf.app.flags.DEFINE_integer(
     'train_image_size', None, 'Train image size')
 tf.app.flags.DEFINE_integer('max_number_of_steps', None,
@@ -157,7 +157,7 @@ tf.app.flags.DEFINE_integer('max_number_of_steps', None,
 # Fine-Tuning Flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_string(
-    'checkpoint_path', 'checkpoints/ssd_300_vgg.ckpt',
+    'checkpoint_path', None,
     'The path to a checkpoint from which to fine-tune.')
 tf.app.flags.DEFINE_string(
     'checkpoint_model_scope', None,
@@ -201,6 +201,7 @@ def main(_):
         # Select the dataset.
         dataset = dataset_factory.get_dataset(
             FLAGS.dataset_name, FLAGS.dataset_split_name, FLAGS.dataset_dir)
+        print(dataset)
 
         # Get the SSD network and its anchors.
         ssd_class = nets_factory.get_network(FLAGS.model_name)
@@ -213,7 +214,7 @@ def main(_):
         preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
         image_preprocessing_fn = preprocessing_factory.get_preprocessing(
             preprocessing_name, is_training=True)
-
+        dataset.data_sources='converted/*.tfrecord'
         tf_utils.print_configuration(FLAGS.__flags, ssd_params,
                                      dataset.data_sources, FLAGS.train_dir)
         # =================================================================== #
